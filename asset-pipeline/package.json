@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "author": "Chris Wilcox",
+  "scripts":{
+
+    "build": "npm run browserify & npm run gulp",
+  	"browserify": "browserify /app-client/src/js/main.js -o /app-client/build/js/bundle.js",
+    "gulp": "gulp build",
+
+  	"watch": "npm run watchify & npm run gulp-watch",
+    "watchify": "watchify /app-client/src/js/main.js -o /app-client/build/js/bundle.js -v",
+    "gulp-watch": "gulp watch"
+  },
+  "devDependencies": {
+  }
+}

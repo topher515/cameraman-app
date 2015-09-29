@@ -1,0 +1,66 @@
+
+# Compile css, js assets
+asset-watcher:
+  #image: node:4.1.1-wheezy
+  build: asset-pipeline
+  volumes:
+  - ./app-client/build:/app-client/build
+  - ./app-client/src:/app-client/src
+  #command: "bash -c 'cd /app-client/dev && npm run watch'"
+  command: npm run watch
+
+# Development server
+app-server:
+  build: app-server
+  links:
+  - db
+  - static
+  - redis
+  volumes:
+  - ./app-server:/app-server/
+  command: python manage.py runserver 0.0.0.0:8000
+  ports:
+  - "8000:8000"
+  environment:
+    STATIC_BASE: 'http://192.168.99.100:8001/'
+    POSTGRES_PASSWORD: fastidious
+
+
+# DB migration container
+migrator:
+  build: app-server
+  links:
+  - db
+  volumes:
+  - ./app-server/:/app-server/
+  environment: 
+    POSTGRES_PASSWORD: fastidious
+  command: echo "Migrate only container (run manually to migrate)"
+
+# Data container for DB
+dataonly:
+  image: debian:wheezy
+  volumes:
+  - /var/lib/postgresql/data/                     # Persistent database data
+  command: echo "Data only container"
+
+# SQL Database
+db:
+  image: postgres:9.4.4
+  environment: 
+    POSTGRES_PASSWORD: fastidious
+  volumes_from:
+  - dataonly # For database persistence
+
+# Static content server
+static:
+  image: nginx:1.9.5
+  volumes:
+  - ./app-client/build:/usr/share/nginx/html:ro
+  ports:
+  - "8001:80"
+
+# For API key sharing to headless-cameraman service
+redis:
+  image: redis:3.0.4
+  command: -d redis
